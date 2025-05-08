@@ -12,9 +12,6 @@
     "check-version": "node --version",
     "debug": "tsx --inspect-brk src/index.ts"
   },
-  "engines": {
-    "node": "20.18.0"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
