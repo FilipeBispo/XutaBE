@@ -1,4 +1,3 @@
-import { RequestHandler } from "express";
 import { google } from "googleapis";
 
 export const auth = new google.auth.GoogleAuth({

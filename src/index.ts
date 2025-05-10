@@ -11,6 +11,14 @@ const port = process.env.PORT ?? "9001";
 // Endpoint to upload and compress image
 app.post(
   "/upload",
+  (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    next();
+  },
   upload.single("image"),
   async (req: Request, res: Response): Promise<void> => {
     try {
