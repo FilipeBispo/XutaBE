@@ -19,10 +19,11 @@ app.post(
     );
     next();
   },
-  upload.single("image"),
+  upload.single("file"),
   async (req: Request, res: Response): Promise<void> => {
     try {
       console.log("Request file:", req.file);
+      console.log("Request body:", req.body);
 
       if (!req.file) {
         res.status(400).send("No file uploaded.");
@@ -30,29 +31,47 @@ app.post(
       }
 
       const { buffer, originalname, mimetype } = req.file;
+      const customFilename = req.body.filename || originalname;
       console.log("File details:", {
         originalname,
+        customFilename,
         mimetype,
         bufferSize: buffer?.length,
       });
 
-      // Compress image using sharp
-      const compressedBuffer = await sharp(buffer)
-        .resize({ width: 1024 }) // Resize to width of 1024px
-        .jpeg({ quality: 80 }) // Compress to 80% quality
-        .toBuffer();
+      let finalBuffer = buffer;
+      let finalMimetype = mimetype;
 
-      // Create a temporary file to upload
-      const tempFilePath = path.join("./uploads", "temp_" + originalname);
-      fs.writeFileSync(tempFilePath, compressedBuffer);
+      if (mimetype.startsWith("image/")) {
+        // Compress image using sharp
+        finalBuffer = await sharp(buffer)
+          .resize({ width: 1024 }) // Resize to width of 1024px
+          .jpeg({ quality: 80 }) // Compress to 80% quality
+          .toBuffer();
+        finalMimetype = "image/jpeg";
+      }
 
+      const tempFilePath = path.join("./uploads", "temp_" + customFilename);
+      fs.writeFileSync(tempFilePath, finalBuffer);
+
+      let parent = "";
+      switch (req.body.type) {
+        case "campaign":
+          parent = process.env.CAMPAIGN_FOLDER_ID!;
+          break;
+        case "institution":
+          parent = process.env.INSTITUTION_FOLDER_ID!;
+          break;
+        default:
+          parent = process.env.CAMPAIGN_FOLDER_ID!;
+      }
       // Upload to Google Drive
       const fileMetadata = {
-        name: originalname,
-        parents: [process.env.DRIVE_FOLDER_ID!], // Optional: specify folder
+        name: customFilename,
+        parents: [parent],
       };
       const media = {
-        mimeType: mimetype,
+        mimeType: finalMimetype,
         body: fs.createReadStream(tempFilePath),
       };
 
