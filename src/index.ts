@@ -108,7 +108,7 @@ app.post(
         const base64Image = buffer.toString("base64");
         formData.append("image", base64Image);
         const endpoint =
-          "https://api.imgbb.com/1/upload?key=162cf566f6050b01def37b12bc310e34";
+          "https://api.imgbb.com/1/upload?key=" + process.env.IMGBB_API_KEY;
 
         const response = await fetch(endpoint, {
           method: "POST",
