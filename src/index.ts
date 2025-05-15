@@ -8,6 +8,11 @@ import path from "path";
 
 const app = express();
 const port = process.env.PORT ?? "9001";
+
+// Endpoint to ping the server
+app.get("/ping", (req, res) => {
+  res.send("pong");
+});
 // Endpoint to upload and compress image
 app.post(
   "/upload",
