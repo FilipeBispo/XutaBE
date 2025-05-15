@@ -81,26 +81,43 @@ app.post(
         default:
           parent = process.env.CAMPAIGN_FOLDER_ID!;
       }
-      // Upload to Google Drive
-      const fileMetadata = {
-        name: customFilename,
-        parents: [parent],
-      };
-      const media = {
-        mimeType: finalMimetype,
-        body: fs.createReadStream(tempFilePath),
-      };
+      if (!mimetype.startsWith("image/")) {
+        // Upload to Google Drive
+        const fileMetadata = {
+          name: customFilename,
+          parents: [parent],
+        };
+        const media = {
+          mimeType: finalMimetype,
+          body: fs.createReadStream(tempFilePath),
+        };
 
-      const response = await drive.files.create({
-        requestBody: fileMetadata,
-        media: media,
-        fields: "id",
-      });
+        const response = await drive.files.create({
+          requestBody: fileMetadata,
+          media: media,
+          fields: "id",
+        });
 
-      // Delete the temporary file
-      fs.unlinkSync(tempFilePath);
+        // Delete the temporary file
+        fs.unlinkSync(tempFilePath);
 
-      res.status(200).json({ fileId: response.data.id });
+        res.status(200).json({ fileId: response.data.id });
+      } else {
+        const formData = new FormData();
+        // Convert buffer to base64
+        const base64Image = buffer.toString("base64");
+        formData.append("image", base64Image);
+        const endpoint =
+          "https://api.imgbb.com/1/upload?key=162cf566f6050b01def37b12bc310e34";
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        console.log("data", data);
+        res.status(200).json({ fileId: data.data.medium.url });
+      }
     } catch (error) {
       console.error("Error uploading file:", error);
       res.status(500).send("An error occurred while uploading the file.");
