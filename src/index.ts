@@ -116,7 +116,7 @@ app.post(
         });
         const data = await response.json();
         console.log("data", data);
-        res.status(200).json({ fileId: data.data.medium.url });
+        res.status(200).json({ fileId: data.data.image.url });
       }
     } catch (error) {
       console.error("Error uploading file:", error);
